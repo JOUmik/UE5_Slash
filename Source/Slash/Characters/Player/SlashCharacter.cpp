@@ -17,8 +17,13 @@
 #include "Components/TargetComponent.h"
 #include "HUD/SlashHUD.h"
 #include "HUD/SlashOverlayWidget.h"
+#include "Interfaces/ICharacterState.h"
 #include "Items/Soul/Soul.h"
 #include "Items/Treasures/Treasure.h"
+#include "State/IdleState.h"
+#include "State/AttackState.h"
+#include "State/JumpState.h"
+#include "State/MoveState.h"
 
 // Sets default values
 ASlashCharacter::ASlashCharacter()
@@ -73,6 +78,13 @@ void ASlashCharacter::BeginPlay()
 
 		InitializeSlashOverlayWidget(PlayerController);
 	}
+
+	//state
+	idleState = new IdleState();
+	moveState = new MoveState();
+	jumpState = new JumpState();
+	attackState = new AttackState();
+	CurrentState = idleState;
 }
 
 void ASlashCharacter::Tick(float DeltaTime)
@@ -83,6 +95,8 @@ void ASlashCharacter::Tick(float DeltaTime)
 	{
 		AttributeComp->SetStaminaByPercent(SlashOverlayWidget->GetStaminaBarPercent());
 	}
+
+	CurrentState->UpdateState(this, DeltaTime);
 }
 
 void ASlashCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -501,4 +515,17 @@ void ASlashCharacter::Arm()
 	PlayEquipMontage(FName("Equip"));
 	CharacterState = ECharacterState::ECS_EquippedOneHandedWeapon;
 	ActionState = EActionState::EAS_Equipping;
+}
+
+void ASlashCharacter::ChangeState(ICharacterState* NewState)
+{
+	if (CurrentState)
+	{
+		CurrentState->ExitState(this);
+	}
+	CurrentState = NewState;
+	if (CurrentState)
+	{
+		CurrentState->EnterState(this);
+	}
 }

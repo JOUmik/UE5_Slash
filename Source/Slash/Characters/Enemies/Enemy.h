@@ -6,6 +6,9 @@
 #include "Characters/BaseCharacter.h"
 #include "Enemy.generated.h"
 
+struct FAIStimulus;
+class UAIPerceptionComponent;
+class UAISenseConfig_Sight;
 class ASoul;
 class UTargetPointComponent;
 class UPawnSensingComponent;
@@ -46,7 +49,7 @@ protected:
 
 	/* Behaviours */
 	UFUNCTION()
-	void OnSeePawn(APawn* Pawn);
+	void OnSeePawn(AActor* Actor, FAIStimulus Stimulus);
 	void MoveToTarget(AActor* Target);
 	void LostInterest();
 	void StartPatrolling();
@@ -77,7 +80,9 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	UTargetPointComponent* TargetPointComp;
 	UPROPERTY(VisibleAnywhere)
-	UPawnSensingComponent* PawnSensingComp;
+	UAIPerceptionComponent* AIPerceptionComponent;
+	UPROPERTY(VisibleAnywhere)
+	UAISenseConfig_Sight* SightConfig;
 	/* _Components */
 
 private:

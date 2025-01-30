@@ -8,6 +8,11 @@
 #include "Interfaces/PickUpInterface.h"
 #include "SlashCharacter.generated.h"
 
+class AttackState;
+class MoveState;
+class JumpState;
+class IdleState;
+class ICharacterState;
 class ATreasure;
 class USlashOverlayWidget;
 class UTargetComponent;
@@ -161,4 +166,13 @@ private:
 	FTimerHandle StaminaRecoveryTimer;
 	FTimerHandle DodgingTimer;
 	/* _Timer */
+
+	/* State */
+	ICharacterState* CurrentState;
+	IdleState* idleState;
+	MoveState* moveState;
+	JumpState* jumpState;
+	AttackState* attackState;
+	void ChangeState(ICharacterState* NewState);
+	/* _State */
 };

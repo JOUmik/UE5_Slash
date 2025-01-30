@@ -11,11 +11,12 @@
 #include "HUD/HealthBarComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Navigation/PathFollowingComponent.h"
-#include "Perception/PawnSensingComponent.h"
 
 #include "AIController.h"
 #include "HUD/TargetPointComponent.h"
 #include "Items/Soul/Soul.h"
+#include "Perception/AIPerceptionComponent.h"
+#include "Perception/AISenseConfig_Sight.h"
 
 AEnemy::AEnemy() : CurrentState(EEnemyState::EES_Patrolling), PatrolMethod(EPatrolMethod::EPM_BackAndForth)
 {
@@ -34,10 +35,20 @@ AEnemy::AEnemy() : CurrentState(EEnemyState::EES_Patrolling), PatrolMethod(EPatr
 	HealthBarComp->SetupAttachment(GetRootComponent());
 	TargetPointComp = CreateDefaultSubobject<UTargetPointComponent>("Target Point Component");
 	TargetPointComp->SetupAttachment(GetRootComponent());
-	PawnSensingComp = CreateDefaultSubobject<UPawnSensingComponent>("Pawn Sensing Component");
 
-	PawnSensingComp->SightRadius = 1600.f;
-	PawnSensingComp->SetPeripheralVisionAngle(45.f);
+	AIPerceptionComponent = CreateDefaultSubobject<UAIPerceptionComponent>(TEXT("AIPerceptionComponent"));
+	SightConfig = CreateDefaultSubobject<UAISenseConfig_Sight>(TEXT("SightConfig"));
+
+	SightConfig->SightRadius = 1600.f;
+	SightConfig->PeripheralVisionAngleDegrees = 45.f;
+
+	SightConfig->DetectionByAffiliation.bDetectEnemies = true;
+	SightConfig->DetectionByAffiliation.bDetectNeutrals = true;
+	SightConfig->DetectionByAffiliation.bDetectFriendlies = true;
+
+	AIPerceptionComponent->ConfigureSense(*SightConfig);
+	AIPerceptionComponent->SetDominantSense(SightConfig->GetSenseImplementation());
+	
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 	GetCharacterMovement()->MaxWalkSpeed = 120.f;
 
@@ -74,9 +85,9 @@ void AEnemy::BeginPlay()
 		MoveToTarget(PatrolTarget);
 	}
 
-	if(PawnSensingComp)
+	if (AIPerceptionComponent)
 	{
-		PawnSensingComp->OnSeePawn.AddDynamic(this, &AEnemy::OnSeePawn);
+		AIPerceptionComponent->OnTargetPerceptionUpdated.AddDynamic(this, &AEnemy::OnSeePawn);
 	}
 
 	//Attach the weapon to enemy
@@ -236,16 +247,20 @@ void AEnemy::HandleDamage(const float DamageAmount) const
 	}
 }
 
-void AEnemy::OnSeePawn(APawn* Pawn)
+void AEnemy::OnSeePawn(AActor* Actor, FAIStimulus Stimulus)
 {
-	if(Pawn->ActorHasTag(Dead_TAG)) return;
-	if(Pawn->ActorHasTag(SLASH_CHARACTER_TAG) && CurrentState == EEnemyState::EES_Patrolling)
+	if (Stimulus.WasSuccessfullySensed())
 	{
-		CombatTarget = Pawn;
-		ChangeCurrentState(EEnemyState::EES_Chasing);
-		//clear timer
-		ClearPatrolTimer();
+		if(Actor->ActorHasTag(Dead_TAG)) return;
+     	if(Actor->ActorHasTag(SLASH_CHARACTER_TAG) && CurrentState == EEnemyState::EES_Patrolling)
+     	{
+     		CombatTarget = Actor;
+     		ChangeCurrentState(EEnemyState::EES_Chasing);
+     		//clear timer
+     		ClearPatrolTimer();
+     	}
 	}
+	
 }
 
 void AEnemy::MoveToTarget(AActor* Target)

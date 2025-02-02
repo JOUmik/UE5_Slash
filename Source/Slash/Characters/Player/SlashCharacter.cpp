@@ -111,8 +111,8 @@ void ASlashCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 	if (InputComp) {
 		InputComp->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ASlashCharacter::Move);
 		InputComp->BindAction(LookAction, ETriggerEvent::Triggered, this, &ASlashCharacter::Look);
-		InputComp->BindAction(JumpAction, ETriggerEvent::Started, this, &ASlashCharacter::StartJump);
-		InputComp->BindAction(JumpAction, ETriggerEvent::Completed, this, &ASlashCharacter::StopJump);
+		InputComp->BindAction(JumpAction, ETriggerEvent::Started, this, &ASlashCharacter::StartJumpKey);
+		InputComp->BindAction(JumpAction, ETriggerEvent::Completed, this, &ASlashCharacter::StopJumpKey);
 		InputComp->BindAction(EquipAction, ETriggerEvent::Started, this, &ASlashCharacter::EKeyPressed);
 		InputComp->BindAction(AttackAction, ETriggerEvent::Triggered, this, &ASlashCharacter::AttackKey);
 		InputComp->BindAction(HeavyAttackAction, ETriggerEvent::Started, this, &ASlashCharacter::UseHeavyAttack);
@@ -228,7 +228,7 @@ void ASlashCharacter::Look(const FInputActionValue& Value)
 	}
 }
 
-void ASlashCharacter::StartJump(const FInputActionValue& Value)
+void ASlashCharacter::StartJump()
 {
 	if(CharacterState == ECharacterState::ECS_Dead) return;
 	if(ActionState != EActionState::EAS_Unoccupied) return;
@@ -236,10 +236,11 @@ void ASlashCharacter::StartJump(const FInputActionValue& Value)
 	if(GetCharacterMovement()->IsMovingOnGround())
 	{
 		Jump();
+		ChangeState(jumpState);
 	}
 }
 
-void ASlashCharacter::StopJump(const FInputActionValue& Value)
+void ASlashCharacter::StopJump()
 {
 	if(CharacterState == ECharacterState::ECS_Dead) return;
 	if(ActionState != EActionState::EAS_Unoccupied) return;
@@ -308,6 +309,20 @@ void ASlashCharacter::Focus()
 	}
 	
 }
+
+void ASlashCharacter::StartJumpKey(const FInputActionValue& Value)
+{
+	jumpState->HandleInput(this, Value);
+}
+
+void ASlashCharacter::StopJumpKey(const FInputActionValue& Value)
+{
+	if (CurrentState == jumpState)
+	{
+		ChangeState(idleState);
+	}
+}
+
 void ASlashCharacter::Dodge()
 {
 	if(CanDodge())

@@ -75,6 +75,8 @@ public:
 
 	virtual void Attack() override;
 	void Dodge();
+	void StartJump();
+	void StopJump();
 protected:
 	virtual void BeginPlay() override;
 
@@ -115,12 +117,12 @@ private:
 	/* Callbacks for Input */
 	void Move(const FInputActionValue& Value);
 	void Look(const FInputActionValue& Value);
-	void StartJump(const FInputActionValue& Value);
-	void StopJump(const FInputActionValue& Value);
 	void EKeyPressed();
 	void UseHeavyAttack(const FInputActionValue& Value);
 	void UseNormalAttack(const FInputActionValue& Value);
 	void Focus();
+	void StartJumpKey(const FInputActionValue& Value);
+	void StopJumpKey(const FInputActionValue& Value);
 	void AttackKey(const FInputActionValue& Value);
 	void DodgeKey(const FInputActionValue& Value);
 	/* _Callbacks for Input */

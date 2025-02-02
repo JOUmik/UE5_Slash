@@ -8,6 +8,7 @@
 #include "Interfaces/PickUpInterface.h"
 #include "SlashCharacter.generated.h"
 
+class DodgeState;
 class AttackState;
 class MoveState;
 class JumpState;
@@ -40,6 +41,7 @@ public:
 	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 	virtual void GetHit_Implementation(const FVector& ImpactPoint, AActor* Hitter) override;
 	FVector GetCameraLocation() const;
+	float GetGroundSpeed() const;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "CPP Settings|Input Setting")
 	UInputMappingContext* MappingContext;
 
@@ -61,6 +63,18 @@ public:
 	/* Components */
 	UPROPERTY(VisibleAnywhere)
 	USpringArmComponent* SpringComp;
+
+	/*State*/
+	void ChangeState(ICharacterState* NewState);
+	ICharacterState* GetIdleState() const;
+	ICharacterState* GetJumpState() const;
+	ICharacterState* GetMoveState() const;
+	ICharacterState* GetAttackState() const;
+	ICharacterState* GetDodgeState() const;
+	/*_State*/
+
+	virtual void Attack() override;
+	void Dodge();
 protected:
 	virtual void BeginPlay() override;
 
@@ -104,11 +118,11 @@ private:
 	void StartJump(const FInputActionValue& Value);
 	void StopJump(const FInputActionValue& Value);
 	void EKeyPressed();
-	virtual void Attack() override;
 	void UseHeavyAttack(const FInputActionValue& Value);
 	void UseNormalAttack(const FInputActionValue& Value);
 	void Focus();
-	void Dodge(const FInputActionValue& Value);
+	void AttackKey(const FInputActionValue& Value);
+	void DodgeKey(const FInputActionValue& Value);
 	/* _Callbacks for Input */
 
 	/*	Behaviours */
@@ -173,6 +187,6 @@ private:
 	MoveState* moveState;
 	JumpState* jumpState;
 	AttackState* attackState;
-	void ChangeState(ICharacterState* NewState);
+	DodgeState* dodgeState;
 	/* _State */
 };

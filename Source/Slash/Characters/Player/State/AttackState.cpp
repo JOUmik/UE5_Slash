@@ -1,4 +1,6 @@
 ﻿#include "AttackState.h"
+#include "Characters/Player/SlashCharacter.h"
+#include "InputActionValue.h"
 
 AttackState::AttackState()
 {
@@ -8,8 +10,9 @@ AttackState::~AttackState()
 {
 }
 
-void AttackState::HandleInput(const FInputActionValue& Value)
+void AttackState::HandleInput(ASlashCharacter* Character, const FInputActionValue& Value)
 {
+	Character->Attack();
 }
 
 void AttackState::EnterState(ASlashCharacter* Character)

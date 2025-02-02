@@ -15,7 +15,7 @@ public:
 	ICharacterState();
 	virtual ~ICharacterState();
 
-	virtual void HandleInput(const FInputActionValue& Value) = 0;
+	virtual void HandleInput(ASlashCharacter* Character, const FInputActionValue& Value) = 0;
 	virtual void EnterState(ASlashCharacter* Character) = 0;
 	virtual void ExitState(ASlashCharacter* Character) = 0;
 	virtual void UpdateState(ASlashCharacter* Character, float DeltaTime) = 0;

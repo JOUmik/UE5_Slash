@@ -8,7 +8,7 @@ public:
 	IdleState();
 	virtual ~IdleState() override;
 
-	virtual void HandleInput(const FInputActionValue& Value) override;
+	virtual void HandleInput(ASlashCharacter* Character, const FInputActionValue& Value) override;
 	virtual void EnterState(ASlashCharacter* Character) override;
 	virtual void ExitState(ASlashCharacter* Character) override;
 	virtual void UpdateState(ASlashCharacter* Character, float DeltaTime) override;

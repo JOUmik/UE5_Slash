@@ -2,11 +2,11 @@
 
 #include "Interfaces/ICharacterState.h"
 
-class SLASH_API MoveState : public ICharacterState
+class SLASH_API DodgeState : public ICharacterState
 {
 public:
-	MoveState();
-	virtual ~MoveState() override;
+	DodgeState();
+	virtual ~DodgeState() override;
 
 	virtual void HandleInput(ASlashCharacter* Character, const FInputActionValue& Value) override;
 	virtual void EnterState(ASlashCharacter* Character) override;

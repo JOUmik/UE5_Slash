@@ -20,10 +20,13 @@
 #include "Interfaces/ICharacterState.h"
 #include "Items/Soul/Soul.h"
 #include "Items/Treasures/Treasure.h"
+#include "Kismet/KismetMathLibrary.h"
 #include "State/IdleState.h"
 #include "State/AttackState.h"
+#include "State/DodgeState.h"
 #include "State/JumpState.h"
 #include "State/MoveState.h"
+#include "State/DodgeState.h"
 
 // Sets default values
 ASlashCharacter::ASlashCharacter()
@@ -84,6 +87,7 @@ void ASlashCharacter::BeginPlay()
 	moveState = new MoveState();
 	jumpState = new JumpState();
 	attackState = new AttackState();
+	dodgeState = new DodgeState();
 	CurrentState = idleState;
 }
 
@@ -110,7 +114,7 @@ void ASlashCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 		InputComp->BindAction(JumpAction, ETriggerEvent::Started, this, &ASlashCharacter::StartJump);
 		InputComp->BindAction(JumpAction, ETriggerEvent::Completed, this, &ASlashCharacter::StopJump);
 		InputComp->BindAction(EquipAction, ETriggerEvent::Started, this, &ASlashCharacter::EKeyPressed);
-		InputComp->BindAction(AttackAction, ETriggerEvent::Triggered, this, &ASlashCharacter::Attack);
+		InputComp->BindAction(AttackAction, ETriggerEvent::Triggered, this, &ASlashCharacter::AttackKey);
 		InputComp->BindAction(HeavyAttackAction, ETriggerEvent::Started, this, &ASlashCharacter::UseHeavyAttack);
 		InputComp->BindAction(HeavyAttackAction, ETriggerEvent::Completed, this, &ASlashCharacter::UseNormalAttack);
 		InputComp->BindAction(FocusAction, ETriggerEvent::Started, this, &ASlashCharacter::Focus);
@@ -177,6 +181,11 @@ void ASlashCharacter::GetHit_Implementation(const FVector& ImpactPoint, AActor* 
 FVector ASlashCharacter::GetCameraLocation() const
 {
 	return CameraComp->GetComponentLocation();
+}
+
+float ASlashCharacter::GetGroundSpeed() const
+{
+	return UKismetMathLibrary::VSizeXY(GetMovementComponent()->Velocity);
 }
 
 void ASlashCharacter::Move(const FInputActionValue& Value)
@@ -273,6 +282,7 @@ void ASlashCharacter::Attack()
 			PlayMontageSection(AttackMontage, FName("Attack1"));
 		}
 		ActionState = EActionState::EAS_Attacking;
+		ChangeState(attackState);
 	}
 }
 
@@ -298,8 +308,7 @@ void ASlashCharacter::Focus()
 	}
 	
 }
-
-void ASlashCharacter::Dodge(const FInputActionValue& Value)
+void ASlashCharacter::Dodge()
 {
 	if(CanDodge())
 	{
@@ -311,8 +320,19 @@ void ASlashCharacter::Dodge(const FInputActionValue& Value)
 		}
 		PlayDodgeMontage(0.f);
 		//GetWorldTimerManager().SetTimer(DodgingTimer, this, &ASlashCharacter::PlayDodgeMontage, GetWorld()->GetDeltaSeconds());
+		ChangeState(dodgeState);
 	}
 }
+void ASlashCharacter::AttackKey(const FInputActionValue& Value)
+{
+	attackState->HandleInput(this, Value);
+}
+
+void ASlashCharacter::DodgeKey(const FInputActionValue& Value)
+{
+	dodgeState->HandleInput(this, Value);
+}
+
 
 void ASlashCharacter::EquipWeapon(AWeapon* Weapon)
 {
@@ -408,6 +428,7 @@ void ASlashCharacter::PlayDodgeMontage(const float Angle)
 void ASlashCharacter::AttackEnd()
 {
 	ActionState = EActionState::EAS_Unoccupied;
+	ChangeState(idleState);
 }
 
 void ASlashCharacter::EquipEnd()
@@ -418,6 +439,7 @@ void ASlashCharacter::EquipEnd()
 void ASlashCharacter::DodgeEnd()
 {
 	ActionState = EActionState::EAS_Unoccupied;
+	ChangeState(idleState);
 
 	if(TargetComp->bIsFocusing)
 	{
@@ -528,4 +550,29 @@ void ASlashCharacter::ChangeState(ICharacterState* NewState)
 	{
 		CurrentState->EnterState(this);
 	}
+}
+
+ICharacterState* ASlashCharacter::GetIdleState() const
+{
+	return idleState;
+}
+
+ICharacterState* ASlashCharacter::GetJumpState() const
+{
+	return jumpState;
+}
+
+ICharacterState* ASlashCharacter::GetMoveState() const
+{
+	return moveState;
+}
+
+ICharacterState* ASlashCharacter::GetAttackState() const
+{
+	return attackState;
+}
+
+ICharacterState* ASlashCharacter::GetDodgeState() const
+{
+	return dodgeState;
 }

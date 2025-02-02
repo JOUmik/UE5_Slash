@@ -10,7 +10,7 @@ IdleState::~IdleState()
 {
 }
 
-void IdleState::HandleInput(const FInputActionValue& Value)
+void IdleState::HandleInput(ASlashCharacter* Character, const FInputActionValue& Value)
 {
 }
 
@@ -24,4 +24,8 @@ void IdleState::ExitState(ASlashCharacter* Character)
 
 void IdleState::UpdateState(ASlashCharacter* Character, float DeltaTime)
 {
+	if (Character->GetGroundSpeed() != 0)
+	{
+		Character->ChangeState(Character->GetMoveState());
+	}
 }
